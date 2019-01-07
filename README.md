@@ -78,7 +78,7 @@ If you do training for the first time, you need to preprocess the dataset.
 Currently we utilize the contents of `data` directory in Kaldi's recipe directories that are containing preprocessed corpus data.
 You need to run the preparation script in each Kaldi recipe before doing the followings.
 Now we support the Kaldi's `aspire`, `swbd`, and `tedlium` recipes. You will need LDC's corpora to use `aspire` and `swbd` datasets.
-Please modify `RECIPE_PATH` variable in `asr/datasets/*.py` first according to the location of your Kaldi setup.
+Please modify `recipe_path` variable in `asr/datasets/*.py` first according to the location of your Kaldi setup.
 ```
 $ python prepare.py aspire <data-path>
 ```
