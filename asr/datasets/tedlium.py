@@ -2,7 +2,7 @@ import sys
 import argparse
 from pathlib import Path
 
-from ..utils.logger import logger, set_logfile
+from ..utils.logger import logger, init_logger
 from ._common import KALDI_PATH, KaldiDataImporter
 
 
@@ -217,7 +217,8 @@ CORRECT_TABLE = {
 class KaldiTedliumImporter(KaldiDataImporter):
 
     def __init__(self, target_dir):
-        recipe_path = Path(KALDI_PATH, "egs", "tedlium", "ics").resolve()
+        #recipe_path = Path(KALDI_PATH, "egs", "tedlium", "ics").resolve()
+        recipe_path = Path(KALDI_PATH, "egs", "tedlium", "s5_r2").resolve()
         assert recipe_path.exists(), f"no such path \"{str(recipe_path)}\" found"
         super().__init__(recipe_path, target_dir)
 
@@ -254,7 +255,8 @@ def prepare(argv):
     assert not (args.text_only and args.rebuild), "options --text-only and --rebuild cannot together. choose either of them."
 
     log_file = Path(args.target_dir, 'prepare.log').resolve()
-    set_logfile(log_file)
+    #set_logfile(log_file)
+    init_logger(log_file="prepare.log", **vars(args))
 
     target_path = Path(args.target_dir).resolve()
     logger.info(f"target data path : {target_path}")

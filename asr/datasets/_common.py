@@ -42,6 +42,7 @@ class KaldiDataImporter:
     def split_wav(self, mode):
         import io
         import wave
+        from ..utils import params as p
         segments_file = self.recipe_path.joinpath("data", mode, "segments")
         logger.info(f"processing {str(segments_file)} file ...")
         segments = dict()
@@ -95,6 +96,7 @@ class KaldiDataImporter:
         return text
 
     def get_transcripts(self, mode):
+        from ..utils import params as p
         texts_file = self.recipe_path.joinpath("data", mode, "text")
         logger.info(f"processing {str(texts_file)} file ...")
         manifest = dict()
@@ -128,6 +130,7 @@ class KaldiDataImporter:
         import io
         import pipes
         import gzip
+        from ..utils import params as p
 
         exp_dir = self.recipe_path.joinpath("exp", "tri5a").resolve()
         models = exp_dir.glob("*.mdl")
@@ -166,6 +169,7 @@ class KaldiDataImporter:
 
 
     def make_ctc_labels(self):
+        from ..utils import params as p
         # find *.phn files
         logger.info(f"finding *.phn files under {str(self.target_path)}")
         phn_files = [str(x) for x in self.target_path.rglob("*.phn")]
@@ -183,6 +187,7 @@ class KaldiDataImporter:
 
 
     def count_priors(self, phn_files=None):
+        from ..utils import params as p
         # load labels.txt
         labels = dict()
         with open('asr/kaldi/graph/labels.txt', 'r') as f:
@@ -241,6 +246,7 @@ class KaldiDataImporter:
         self.make_manifest(mode, wav_manifest, txt_manifest)
 
     def make_manifest(self, mode, wav_manifest, txt_manifest):
+        from ..utils import params as p
         logger.info(f"generating manifest to \"{mode}.csv\" ...")
         min_len, max_len = 1e30, 0
         histo = [0] * 31
