@@ -50,6 +50,11 @@ export CPLUS_INCLUDE_PATH=/usr/include/sox:$CPLUS_INCLUDE_PATH
 ```
 don't forget to do `$ source ~/.bashrc` before you try to install the requirements.
 
+If you have an installation error of `torchaudio` on a Ubuntu machine, install the following.
+```
+sudo apt-get update && sudo apt-get install sox libsox-dev libsox-fmt-all
+```
+
 Modify the Kaldi path in `_path.py`:
 ```
 $ cd asr/kaldi
