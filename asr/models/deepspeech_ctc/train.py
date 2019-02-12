@@ -16,6 +16,7 @@ from asr.kaldi.latgen import LatGenCTCDecoder
 from ..trainer import *
 from .network import DeepSpeech
 
+local_num_workers = 0
 
 def batch_train(argv):
     parser = argparse.ArgumentParser(description="DeepSpeech AM with batch training")
@@ -158,7 +159,7 @@ def train(argv):
     amp_handle = get_amp_handle(args)
     trainer = NonSplitTrainer(model, amp_handle, **vars(args))
     labeler = trainer.decoder.labeler
-
+    '''
     train_datasets = [
         NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/aspire/train.csv", stride=input_folding),
         NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/aspire/dev.csv", stride=input_folding),
@@ -172,7 +173,6 @@ def train(argv):
         "dev"  : NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/swbd/eval2000.csv", stride=input_folding),
         "test" : NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/swbd/rt03.csv", stride=input_folding),
     }
-
     dataloaders = {
         "train": NonSplitTrainDataLoader(datasets["train"],
                                          sampler=(DistributedSampler(datasets["train"])
@@ -188,7 +188,32 @@ def train(argv):
                                          batch_size=16, num_workers=8,
                                          shuffle=False, pin_memory=args.use_cuda),
     }
+    '''
+    train_datasets = [
+        NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/train.csv", stride=input_folding),
+    ]
 
+    datasets = {
+        "train": ConcatDataset([AudioSubset(d, data_size=0, min_len=args.min_len, max_len=args.max_len)
+                                for d in train_datasets]),
+        "dev"  : NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/dev.csv", stride=input_folding),
+        "test" : NonSplitTrainDataset(labeler=labeler, manifest_file=f"{args.data_path}/test.csv", stride=input_folding),
+    }
+    dataloaders = {
+        "train": NonSplitTrainDataLoader(datasets["train"],
+                                         sampler=(DistributedSampler(datasets["train"])
+                                                  if is_distributed() else None),
+                                         batch_size=args.batch_size,
+                                         num_workers=args.num_workers,
+                                         shuffle=(not is_distributed()),
+                                         pin_memory=args.use_cuda),
+        "dev"  : NonSplitTrainDataLoader(datasets["dev"],
+                                         batch_size=16, num_workers=local_num_workers,
+                                         shuffle=False, pin_memory=args.use_cuda),
+        "test" : NonSplitTrainDataLoader(datasets["test"],
+                                         batch_size=16, num_workers=local_num_workers,
+                                         shuffle=False, pin_memory=args.use_cuda),
+    }
     # run inference for a certain number of epochs
     for i in range(trainer.epoch, args.num_epochs):
         trainer.train_epoch(dataloaders["train"])
